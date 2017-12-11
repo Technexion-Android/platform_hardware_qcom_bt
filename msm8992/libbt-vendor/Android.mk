@@ -59,11 +59,6 @@ LOCAL_SHARED_LIBRARIES := \
         libcutils \
         liblog
 
-
-# if read from bt nv
-#        libbtnv
-#LOCAL_CFLAGS += -DBT_NV_SUPPORT
-
 LOCAL_CFLAGS += -Wno-error
 LOCAL_MODULE := libbt-vendor
 LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0 SPDX-license-identifier-BSD legacy_not_a_contribution
@@ -73,9 +68,19 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_OWNER := qcom
 
+ifdef TARGET_2ND_ARCH
+LOCAL_MODULE_PATH_32 := $(TARGET_OUT_VENDOR)/lib
+LOCAL_MODULE_PATH_64 := $(TARGET_OUT_VENDOR)/lib64
+else
+LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_SHARED_LIBRARIES)
+endif
+
+ifneq ($(BOARD_ANT_WIRELESS_DEVICE),)
+LOCAL_CFLAGS += -DENABLE_ANT
+endif
 #LOCAL_CFLAGS += -DREAD_BT_ADDR_FROM_PROP
 
-#include $(LOCAL_PATH)/vnd_buildcfg.mk
+include $(LOCAL_PATH)/vnd_buildcfg.mk
 
 include $(BUILD_SHARED_LIBRARY)
 
