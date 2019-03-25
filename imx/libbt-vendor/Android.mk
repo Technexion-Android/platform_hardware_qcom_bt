@@ -20,6 +20,8 @@ ifeq ($(BOARD_HAVE_BLUETOOTH_QCOM),true)
 
 include $(CLEAR_VARS)
 
+LOCAL_CFLAGS += -Wall -Wno-error
+
 BDROID_DIR:= system/bt
 
 LOCAL_SRC_FILES := \
@@ -30,7 +32,9 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES += \
         $(LOCAL_PATH)/include \
-        $(BDROID_DIR)/hci/include
+        $(BDROID_DIR)/hci/include \
+        $(TARGET_OUT_HEADERS)/bt/hci_qcomm_init \
+        system/core/include
 
 ifeq ($(WIFI_BT_STATUS_SYNC), true)
 LOCAL_CFLAGS += -DWIFI_BT_STATUS_SYNC
