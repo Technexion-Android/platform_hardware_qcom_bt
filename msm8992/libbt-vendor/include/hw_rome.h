@@ -167,8 +167,8 @@
 #define ROME_NVM_TLV_3_0_2_PATH         "/vendor/firmware/btnv32.bin"
 //#define ROME_RAMPATCH_TLV_3_0_2_PATH    "/system/etc/firmware/rampatch_tlv_3.2.tlv"
 //#define ROME_NVM_TLV_3_0_2_PATH         "/system/etc/firmware/nvm_tlv_3.2.bin"
-#define TF_RAMPATCH_TLV_1_0_1_PATH     "/vendor/firmware/rampatch_tlv_3.2.tlv"
-#define TF_NVM_TLV_1_0_1_PATH        "/vendor/firmware/nvm_tlv_3.2.bin"
+#define TF_RAMPATCH_TLV_1_0_1_PATH     "/vendor/firmware/qca/rampatch_tlv_tf_1.0.tlv"
+#define TF_NVM_TLV_1_0_1_PATH        "/vendor/firmware/qca/tfbtnv11.bin"
 
 #define ROME_3_1_FW_SU  "bprm.cnss.3.1"
 #define ROME_3_2_FW_SU  "btfwp.cnss.3.2"
