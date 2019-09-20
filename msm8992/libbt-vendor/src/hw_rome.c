@@ -57,7 +57,7 @@ extern "C" {
 
 
 #define BT_VERSION_FILEPATH "/data/misc/bluedroid/bt_fw_version.txt"
-
+#define BD_ADDR_LEN (6)
 #ifdef __cplusplus
 }
 #endif
@@ -70,6 +70,7 @@ unsigned char *phdr_buffer;
 unsigned char *pdata_buffer = NULL;
 patch_info rampatch_patch_info;
 int rome_ver = ROME_VER_UNKNOWN;
+unsigned char bd_addr[BD_ADDR_LEN];
 unsigned char gTlv_type;
 unsigned char gTlv_dwndCfg;
 static unsigned int wipower_flag = 0;
@@ -241,6 +242,9 @@ int get_vs_hci_event(unsigned char *rsp)
 
         case NVM_ACCESS_CODE:
             ALOGI("%s: NVM Access Code!!!", __FUNCTION__);
+            if((rsp[TAG_NUM_OFFSET] == TAG_NUM_2)&&(rsp[6] == BD_ADDR_LEN)) {
+                memcpy(bd_addr, &rsp[TAG_BDADDR_OFFSET], BD_ADDR_LEN);
+            }
             err = HCI_CMD_SUCCESS;
             break;
         case EDL_SET_BAUDRATE_RSP_EVT:
@@ -905,8 +909,9 @@ int rome_get_tlv_file(char *file_path)
 
             /* Write BD Address */
             if(nvm_ptr->tag_id == TAG_NUM_2){
-                memcpy(nvm_byte_ptr, vnd_local_bd_addr, 6);
-                ALOGV("BD Address: %.02x:%.02x:%.02x:%.02x:%.02x:%.02x",
+                memcpy(nvm_byte_ptr, bd_addr, 6);
+
+                ALOGI("BD Address: %.02x:%.02x:%.02x:%.02x:%.02x:%.02x",
                     *nvm_byte_ptr, *(nvm_byte_ptr+1), *(nvm_byte_ptr+2),
                     *(nvm_byte_ptr+3), *(nvm_byte_ptr+4), *(nvm_byte_ptr+5));
             }
@@ -1787,6 +1792,46 @@ static int disable_internal_ldo(int fd)
     return ret;
 }
 
+int rome_hci_bd_address(int fd)
+{
+    int size, err = 0;
+    unsigned char cmd[HCI_MAX_CMD_SIZE];
+    unsigned char rsp[HCI_MAX_EVENT_SIZE];
+    hci_command_hdr *cmd_hdr;
+
+    fprintf(stderr, "%s: HCI READ BD ADDRESS \n", __FUNCTION__);
+
+    memset(cmd, 0x0, HCI_MAX_CMD_SIZE);
+
+    cmd_hdr = (void *) (cmd + 1);
+    cmd[0]  = HCI_COMMAND_PKT;
+    cmd_hdr->opcode = cmd_opcode_pack(HCI_VENDOR_CMD_OGF, HCI_PS_CMD_OCF);
+    cmd_hdr->plen   = 2;
+    cmd[4]  = 0;
+    cmd[5]  = 2;
+
+    /* Total length of the packet to be sent to the Controller */
+    size = (HCI_CMD_IND + HCI_COMMAND_HDR_SIZE + 2);
+
+    ALOGI("%s: HCI CMD: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n", __FUNCTION__, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5]);
+
+    /* Send HCI Command packet to Controller */
+    err = hci_send_vs_cmd(fd, (unsigned char *)cmd, rsp, size);
+    if ( err != size) {
+        fprintf(stderr, "Failed to set the patch info to the Controller!\n");
+        goto error;
+    }
+
+    err = read_hci_event(fd, rsp, HCI_MAX_EVENT_SIZE);
+    if ( err < 0) {
+        fprintf(stderr, "%s: Failed to set patch info on Controller\n", __FUNCTION__);
+        goto error;
+    }
+    fprintf(stderr, "%s: Successfully set patch info on the Controller\n", __FUNCTION__);
+error:
+    return err;
+}
+
 int rome_soc_init(int fd, char *bdaddr)
 {
     int err = -1, size = 0;
@@ -1811,6 +1856,8 @@ int rome_soc_init(int fd, char *bdaddr)
     }
 
     ALOGI("%s: Rome Version (0x%08x)", __FUNCTION__, rome_ver);
+
+    rome_hci_bd_address(fd);
 
     switch (rome_ver){
         case ROME_VER_1_0:
