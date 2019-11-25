@@ -19,3 +19,7 @@ endif
 ifeq ($(BOARD_HAVE_BLUETOOTH_QCOM),true)
 	include $(call all-named-subdir-makefiles, msm8992)
 endif # BOARD_HAVE_BLUETOOTH_QCOM
+
+ifeq ($(BOARD_HAVE_BLUETOOTH_USB),true)
+	include $(call all-named-subdir-makefiles, libbt-vendor-usb)
+endif # BOARD_HAVE_BLUETOOTH_USB
