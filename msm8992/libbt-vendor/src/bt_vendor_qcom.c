@@ -453,7 +453,6 @@ static int bt_powerup(int en )
     if(on == '0'){
         ALOGE("Stopping HCI filter as part of CTRL:OFF");
         stop_hci_filter();
-        property_set("vendor.wc_transport.soc_initialized", "0");
     }
 #endif
 #ifdef WIFI_BT_STATUS_SYNC
