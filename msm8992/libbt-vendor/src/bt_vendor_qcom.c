@@ -37,6 +37,9 @@
 #include <sys/socket.h>
 #include <cutils/sockets.h>
 #include <linux/un.h>
+#ifdef WIFI_BT_STATUS_SYNC
+#include <sys/file.h>
+#endif
 #include <time.h>
 #ifdef BT_NV_SUPPORT
 #include "bt_vendor_persist.h"
@@ -835,7 +838,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
                                        ALOGI("Failed to read BD address. Use the one from bluedroid stack/ftm");
                                     }
 #endif //BT_NV_SUPPORT
-                                    if(rome_soc_init(fd,vnd_local_bd_addr)<0) {
+                                    if(rome_soc_init(fd,(char *)vnd_local_bd_addr)<0) {
                                         retval = -1;
                                         userial_clock_operation(fd, USERIAL_OP_CLK_OFF);
                                     } else {
